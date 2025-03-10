@@ -1,26 +1,18 @@
 import Link from 'next/link';
-import { ArrowLeft, Plus, Search, Tag } from 'lucide-react';
-
-import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getProducts } from '@/lib/firestore';
+import ItemCard from '@/components/item/ItemCard';
 
 // 집 데이터 가져오기 (실제로는 데이터베이스에서 가져올 것)
 function getHouse(id: string) {
   const houses = [
-    { id: '1', name: '메인 하우스' },
-    { id: '2', name: '별장' },
-    { id: '3', name: '오피스텔' },
-    { id: '4', name: '창고' },
+    { id: '1', name: '앵커' },
+    { id: '2', name: '갈보리' },
+    { id: '3', name: '파로스' },
+    { id: '4', name: '피셔맨' },
   ];
 
   return houses.find(house => house.id === id);
@@ -112,9 +104,15 @@ function groupItemsByLocation(items: any[]) {
   }, {} as Record<string, any[]>);
 }
 
-export default function HousePage({ params }: { params: { houseId: string } }) {
-  const house = getHouse(params.houseId) as any;
-  const items = getItems(params.houseId) as any[];
+export default async function HousePage({
+  params,
+}: {
+  params: Promise<{ houseId: string }>;
+}) {
+  const { houseId } = await params;
+  const house = getHouse(houseId) as any;
+  const allItems = await getProducts();
+  const items = allItems.filter(item => item.houseId === houseId);
   const itemsByCategory = groupItemsByCategory(items);
   const itemsByLocation = groupItemsByLocation(items);
 
@@ -145,7 +143,7 @@ export default function HousePage({ params }: { params: { houseId: string } }) {
               />
             </div>
           </div>
-          <Link href={`/items/new?houseId=${params.houseId}`}>
+          <Link href={`/items/new?houseId=${houseId}`}>
             <Button>
               <Plus className="mr-2 h-4 w-4" />새 물품 추가
             </Button>
@@ -199,35 +197,5 @@ export default function HousePage({ params }: { params: { houseId: string } }) {
         </Tabs>
       </div>
     </div>
-  );
-}
-
-function ItemCard({ item }: { item: any }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{item.name}</CardTitle>
-        <CardDescription>{item.location}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{item.category}</Badge>
-          <div className="flex-1" />
-          <Tag className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {item.tags.length}
-          </span>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <div className="flex flex-wrap gap-1">
-          {item.tags.map((tag: string) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardFooter>
-    </Card>
   );
 }

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Building, Search } from 'lucide-react';
+import { Building } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -10,30 +10,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { apts } from '@/config/apt';
+import { getProducts } from '@/lib/firestore';
+import SearchInput from '@/components/search/SearchInput';
 
-export default function HomePage() {
-  const houses = [
-    { id: 1, name: '메인 하우스', itemCount: 120 },
-    { id: 2, name: '별장', itemCount: 45 },
-    { id: 3, name: '오피스텔', itemCount: 78 },
-    { id: 4, name: '창고', itemCount: 210 },
-  ];
+export default async function HomePage() {
+  const allItems = await getProducts();
+  const houses = apts.map(apt => ({
+    id: apt.id,
+    name: apt.name,
+    itemCount: allItems.filter(item => item.houseId === apt.id.toString())
+      .length,
+  }));
 
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">집별 물품 관리</h1>
+          <h1 className="text-3xl font-bold">APT별 물품 관리</h1>
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="물품 검색..."
-                className="w-[250px] pl-8"
-              />
-            </div>
+            <SearchInput />
             <Link href="/items/new">
               <Button>새 물품 추가</Button>
             </Link>
