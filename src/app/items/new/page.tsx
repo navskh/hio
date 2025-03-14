@@ -1,12 +1,9 @@
 'use client';
-
 import type React from 'react';
-
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, X } from 'lucide-react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,12 +24,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { addProduct } from '@/lib/firestore';
 import { apts } from '@/config/apt';
 
-export default function NewItemPage() {
+function NewItemPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const houseId = searchParams.get('houseId') || '';
@@ -48,27 +44,6 @@ export default function NewItemPage() {
     id: apt.id,
     name: apt.name,
   }));
-
-  const categories = [
-    '가구',
-    '전자제품',
-    '주방용품',
-    '의류',
-    '도서',
-    '장난감',
-    '공구',
-    '기타',
-  ];
-  const locations = [
-    '거실',
-    '주방',
-    '침실',
-    '서재',
-    '욕실',
-    '창고',
-    '베란다',
-    '기타',
-  ];
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -261,5 +236,13 @@ export default function NewItemPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SuspensedNewItemPage() {
+  return (
+    <Suspense fallback={<div>로딩중...</div>}>
+      <NewItemPage />
+    </Suspense>
   );
 }

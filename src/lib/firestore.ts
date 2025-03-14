@@ -89,3 +89,10 @@ export const updateProduct = async (
     await updateDoc(productRef.ref, productData);
   }
 };
+
+export const getProductById = async (id: string) => {
+  const productsRef = collection(db, 'products');
+  const snapshot = await getDocs(productsRef);
+  const productRef = snapshot.docs.find(doc => doc.data().id === id);
+  return productRef?.data() as Product;
+};

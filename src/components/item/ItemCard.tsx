@@ -40,6 +40,10 @@ export default function ItemCard({ item }: { item: any }) {
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/items/edit/${item.id}`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -47,7 +51,7 @@ export default function ItemCard({ item }: { item: any }) {
           {item.name}
           <div className="flex items-center space-x-2">
             <Link href={`/items/edit/${item.id}`} className="no-underline">
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={handleEdit}>
                 <PencilIcon className="h-4 w-4" />
               </Button>
             </Link>

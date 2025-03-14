@@ -1,6 +1,5 @@
 'use client';
-
-import { useState } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Building, SearchIcon, Tag } from 'lucide-react';
 
@@ -16,81 +15,40 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSearchParams } from 'next/navigation';
+import { getProducts, Product } from '@/lib/firestore';
+import { apts } from '@/config/apt';
 
-// 모든 물품 데이터 (실제로는 데이터베이스에서 가져올 것)
-const allItems = [
-  {
-    id: '1',
-    name: '소파',
-    category: '가구',
-    tags: ['거실', '브라운', '가죽'],
-    location: '거실',
-    houseId: '1',
-    houseName: '메인 하우스',
-  },
-  {
-    id: '2',
-    name: 'TV',
-    category: '전자제품',
-    tags: ['거실', '삼성', '55인치'],
-    location: '거실',
-    houseId: '1',
-    houseName: '메인 하우스',
-  },
-  {
-    id: '3',
-    name: '냉장고',
-    category: '전자제품',
-    tags: ['주방', 'LG', '양문형'],
-    location: '주방',
-    houseId: '1',
-    houseName: '메인 하우스',
-  },
-  {
-    id: '4',
-    name: '침대',
-    category: '가구',
-    tags: ['침실', '퀸사이즈'],
-    location: '침실',
-    houseId: '2',
-    houseName: '별장',
-  },
-  {
-    id: '5',
-    name: '책상',
-    category: '가구',
-    tags: ['서재', '원목'],
-    location: '서재',
-    houseId: '3',
-    houseName: '오피스텔',
-  },
-  {
-    id: '6',
-    name: '의자',
-    category: '가구',
-    tags: ['서재', '가죽'],
-    location: '서재',
-    houseId: '3',
-    houseName: '오피스텔',
-  },
-  {
-    id: '7',
-    name: '수납장',
-    category: '가구',
-    tags: ['창고', '플라스틱'],
-    location: '창고',
-    houseId: '4',
-    houseName: '창고',
-  },
-];
-
-export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+function SearchContent() {
+  const query = useSearchParams();
+  const q = query.get('q');
+  const [searchQuery, setSearchQuery] = useState(q || '');
+  const [allItems, setAllItems] = useState<Product[]>([]);
   const [searchResults, setSearchResults] = useState<typeof allItems>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
+  useEffect(() => {
+    const fetchAllItems = async () => {
+      const items = await getProducts();
+      setAllItems(items);
+      if (q) {
+        const query = q.toLowerCase();
+        const results = items.filter(
+          item =>
+            item.name.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            item.location.toLowerCase().includes(query) ||
+            item.tags.some(tag => tag.toLowerCase().includes(query)),
+        );
+        setSearchResults(results);
+        setHasSearched(true);
+      }
+    };
+    fetchAllItems();
+  }, [q]);
+
+  const handleSearch = useCallback(() => {
+    if (!searchQuery?.trim()) {
       setSearchResults([]);
       setHasSearched(false);
       return;
@@ -107,7 +65,7 @@ export default function SearchPage() {
 
     setSearchResults(results);
     setHasSearched(true);
-  };
+  }, [searchQuery, allItems]);
 
   // 카테고리별로 결과 그룹화
   const resultsByCategory = searchResults.reduce((acc, item) => {
@@ -120,10 +78,10 @@ export default function SearchPage() {
 
   // 집별로 결과 그룹화
   const resultsByHouse = searchResults.reduce((acc, item) => {
-    if (!acc[item.houseName]) {
-      acc[item.houseName] = [];
+    if (!acc[item.houseId]) {
+      acc[item.houseId] = [];
     }
-    acc[item.houseName].push(item);
+    acc[item.houseId].push(item);
     return acc;
   }, {} as Record<string, typeof allItems>);
 
@@ -224,6 +182,14 @@ export default function SearchPage() {
   );
 }
 
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>로딩중...</div>}>
+      <SearchContent />
+    </Suspense>
+  );
+}
+
 function ItemCard({ item }: { item: any }) {
   return (
     <Card>
@@ -231,7 +197,8 @@ function ItemCard({ item }: { item: any }) {
         <CardTitle>{item.name}</CardTitle>
         <CardDescription className="flex items-center gap-1">
           <Building className="h-3 w-3" />
-          {item.houseName} / {item.location}
+          {apts.find(apt => apt.id === Number(item.houseId))?.name} /{' '}
+          {item.location}
         </CardDescription>
       </CardHeader>
       <CardContent>

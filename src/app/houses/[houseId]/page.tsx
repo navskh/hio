@@ -5,81 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getProducts } from '@/lib/firestore';
 import ItemCard from '@/components/item/ItemCard';
+import { apts } from '@/config/apt';
+import { redirect } from 'next/navigation';
+import SearchInput from '@/components/search/SearchInput';
 
 // 집 데이터 가져오기 (실제로는 데이터베이스에서 가져올 것)
 function getHouse(id: string) {
-  const houses = [
-    { id: '1', name: '앵커' },
-    { id: '2', name: '갈보리' },
-    { id: '3', name: '파로스' },
-    { id: '4', name: '피셔맨' },
-  ];
-
-  return houses.find(house => house.id === id);
-}
-
-// 물품 데이터 가져오기 (실제로는 데이터베이스에서 가져올 것)
-function getItems(houseId: string) {
-  const items = [
-    {
-      id: '1',
-      name: '소파',
-      category: '가구',
-      tags: ['거실', '브라운', '가죽'],
-      location: '거실',
-      houseId: '1',
-    },
-    {
-      id: '2',
-      name: 'TV',
-      category: '전자제품',
-      tags: ['거실', '삼성', '55인치'],
-      location: '거실',
-      houseId: '1',
-    },
-    {
-      id: '3',
-      name: '냉장고',
-      category: '전자제품',
-      tags: ['주방', 'LG', '양문형'],
-      location: '주방',
-      houseId: '1',
-    },
-    {
-      id: '4',
-      name: '침대',
-      category: '가구',
-      tags: ['침실', '퀸사이즈'],
-      location: '침실',
-      houseId: '2',
-    },
-    {
-      id: '5',
-      name: '책상',
-      category: '가구',
-      tags: ['서재', '원목'],
-      location: '서재',
-      houseId: '3',
-    },
-    {
-      id: '6',
-      name: '의자',
-      category: '가구',
-      tags: ['서재', '가죽'],
-      location: '서재',
-      houseId: '3',
-    },
-    {
-      id: '7',
-      name: '수납장',
-      category: '가구',
-      tags: ['창고', '플라스틱'],
-      location: '창고',
-      houseId: '4',
-    },
-  ];
-
-  return items.filter(item => item.houseId === houseId);
+  return apts.find(apt => apt.id === Number(id));
 }
 
 // 카테고리별로 물품 그룹화
@@ -116,6 +48,13 @@ export default async function HousePage({
   const itemsByCategory = groupItemsByCategory(items);
   const itemsByLocation = groupItemsByLocation(items);
 
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      redirect(`/search?q=${e.currentTarget.value}`);
+    }
+  };
+
   if (!house) {
     return <div>집을 찾을 수 없습니다.</div>;
   }
@@ -134,14 +73,7 @@ export default async function HousePage({
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="물품 검색..."
-                className="w-[250px] pl-8"
-              />
-            </div>
+            <SearchInput />
           </div>
           <Link href={`/items/new?houseId=${houseId}`}>
             <Button>
