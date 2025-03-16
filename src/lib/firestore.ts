@@ -8,6 +8,8 @@ import {
   getDocs,
   deleteDoc,
   updateDoc,
+  onSnapshot,
+  query,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -96,3 +98,5 @@ export const getProductById = async (id: string) => {
   const productRef = snapshot.docs.find(doc => doc.data().id === id);
   return productRef?.data() as Product;
 };
+
+export const revalidate = 0;

@@ -71,13 +71,13 @@ export default async function HousePage({
           <h1 className="text-3xl font-bold">{house.name} 물품</h1>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <div className="flex items-center gap-2">
             <SearchInput />
           </div>
           <Link href={`/items/new?houseId=${houseId}`}>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />새 물품 추가
+            <Button className="ml-2" variant="outline">
+              <Plus className="h-4" />새 물품 추가
             </Button>
           </Link>
         </div>

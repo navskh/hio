@@ -26,14 +26,12 @@ export default async function HomePage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">APT별 물품 관리</h1>
-          <div className="flex items-center gap-2">
-            <SearchInput />
-            <Link href="/items/new">
-              <Button>새 물품 추가</Button>
-            </Link>
-          </div>
+        <h1 className="text-2xl font-bold">APT 물품 관리</h1>
+        <div className="flex items-center justify-end gap-2">
+          <SearchInput />
+          <Link href="/items/new">
+            <Button variant="outline">새 물품 추가</Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
